@@ -1,0 +1,27 @@
+# Ambiente Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Configuracao local (tem token, telefone e chat_id). Publique so o config.example.yaml
+config.yaml
+
+# Dados gerados: cadastro de rostos (biometria), fotos de alertas e planilhas
+dados/
+
+# Fotos capturadas para treino (rostos de pessoas reais)
+dataset_abafador/
+dataset_abafador_treino/
+treinos/
+runs/
+
+# Modelos baixados ou treinados (grandes; sao baixados/gerados na maquina)
+modelos/
+*.pt
+*.onnx
+*.ts
+
+# Videos gravados
+*.mp4
+*.avi

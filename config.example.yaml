@@ -1,0 +1,93 @@
+# ============================================================
+#  Monitor de EPI e Presenca - configuracao
+#  Edite este arquivo com o Bloco de Notas. Nao precisa mexer no .py
+# ============================================================
+
+# --- Fonte de video -----------------------------------------
+# 0 = webcam do notebook | 1, 2... = outras cameras USB
+# Camera IP da fabrica: "rtsp://usuario:senha@192.168.0.50:554/stream1"
+camera: 0
+largura: 1280
+altura: 720
+
+# --- Modelos ------------------------------------------------
+# Baixados automaticamente na primeira execucao (precisa de internet 1x).
+modelo_pessoa: yolo11n.pt          # detecta e rastreia pessoas
+# Detector de EPI "vocabulario aberto": acha objetos pela descricao em ingles,
+# sem treino. Bom para o teste na mesa. Para a fabrica, treine um modelo proprio
+# (veja LEIA-ME) e coloque o caminho do .pt aqui.
+modelo_epi: yoloe-11s-seg.pt       # alternativa: yolov8s-worldv2.pt
+tamanho_imagem_epi: 640            # maior = mais preciso e mais lento (320 a 640)
+
+# --- EPIs monitorados ---------------------------------------
+# descricoes: nomes (em ingles) que contam como "esta usando".
+#   Se usar um modelo proprio treinado, coloque aqui os nomes das classes dele.
+# confianca : 0 a 1. Se der falso "OK", aumente. Se nao reconhecer, diminua.
+# obrigatorio: false = so mostra na tela, nao gera alerta.
+# precisa_rosto: true = so avalia quando o rosto esta de frente para a camera.
+epis:
+  capacete:
+    descricoes: ["hard hat", "safety helmet", "construction helmet"]
+    confianca: 0.30
+    obrigatorio: true
+    precisa_rosto: false
+  oculos:
+    descricoes: ["safety glasses", "safety goggles", "glasses"]
+    confianca: 0.25
+    obrigatorio: true
+    precisa_rosto: true
+  protetor_auricular:
+    descricoes: ["earmuffs", "ear muffs", "ear defenders", "ear protection", "hearing protection", "earplugs", "headphones", "headset"]
+    confianca: 0.12
+    obrigatorio: true
+    precisa_rosto: false
+    # Modelo treinado com os EPIs de voces (criado por treinar_abafador.py).
+    # Enquanto o arquivo nao existir, usa o detector generico acima.
+    classificador: modelos/abafador_cls.pt
+    classes_ok: ["na_orelha"]
+    confianca_classificador: 0.6
+
+# --- Tempos (em segundos) -----------------------------------
+tempos:
+  intervalo_epi: 0.5            # de quanto em quanto tempo confere os EPIs
+  janela_epi: 3.0               # decide por maioria nas leituras desta janela
+  sem_epi_para_alerta: 10       # sem EPI por este tempo seguido -> alerta
+  repetir_alerta_epi: 300       # repete o alerta se continuar sem EPI
+  tolerancia_ausencia: 5        # sumiu da camera por menos que isso nao conta
+  # Alerta de ausencia. Na fabrica: 3600 (1 hora). Para testar na mesa use 60.
+  alerta_ausencia: 60
+
+# --- Identificacao das pessoas ------------------------------
+identificacao:
+  # true  = reconhece cada pessoa pelo rosto e mantem o mesmo ID (P1, P2...)
+  #         mesmo depois de sair e voltar. Pessoas novas sao cadastradas sozinhas.
+  # false = nao usa rosto; o ID e so o do rastreador e muda quando a pessoa volta.
+  usar_rosto: true
+  limiar_mesma_pessoa: 0.36     # similaridade minima para ser a mesma pessoa
+  limiar_pessoa_nova: 0.18      # abaixo disso (para todos) = pessoa nova
+  leituras_para_cadastrar: 15   # leituras boas de rosto antes de criar um ID
+  tamanho_minimo_rosto: 50      # em pixels; rosto menor que isso e ignorado
+
+# --- Alertas ------------------------------------------------
+alertas:
+  som: true                     # bipe no computador
+  salvar_foto: true             # guarda a imagem do momento em dados/fotos
+  # Cole aqui a URL de um webhook (Teams, Slack, Discord...) quando decidir
+  # por onde avisar o superior. Vazio = so tela, som e arquivo CSV.
+  webhook_url: ""
+  # Telegram (API oficial de bots, gratuita; manda texto e a foto do alerta).
+  # token: recebido do @BotFather ao criar o bot.
+  # chat_id: rode "monitor_epi.py --testar-telegram" que ele mostra o numero.
+  telegram:
+    token: ""
+    chat_id: ""
+  # WhatsApp pelo CallMeBot (para teste; servico gratuito de terceiros).
+  # Cada pessoa que vai receber ativa no proprio celular (callmebot.com) e
+  # ganha uma apikey. Telefone com +55 e DDD, entre aspas. Para mais de uma
+  # pessoa, repita as duas linhas (- telefone / apikey).
+  whatsapp:
+    - telefone: ""        # exemplo: "+5511999998888"
+      apikey: ""          # exemplo: "1234567"
+
+# --- Saida --------------------------------------------------
+pasta_dados: dados
